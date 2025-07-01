@@ -1,10 +1,12 @@
+using EntryPoints.TelegramBot;
 using MoscowActivityServices.Implementation;
 using Utils.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var activityServicesSettings = builder.Configuration.Get<ActivityClientSettings>();
-builder.Services.AddMoscowActivityServices(activityServicesSettings);
+var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
+builder.Services.AddMoscowActivityServices(settings.ActivityClient);
+builder.Services.AddTelegramBot(settings.Bot);
     
 var app = builder.Build();
 

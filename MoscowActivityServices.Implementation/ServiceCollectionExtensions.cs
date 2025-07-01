@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using MoscowActivityServices.Abstractions;
 using Utils.Settings;
@@ -12,8 +13,10 @@ public static class ServiceCollectionExtensions
         {
             client.BaseAddress = new Uri(settings.BaseAddress);
             client.DefaultRequestHeaders.Add("Accept", "application/json");
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {settings.Token}");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue($"Bearer", settings.Token);
         });
+        
+        services.AddTransient<IActivityService, ActivityService>();
 
         return services;
     }

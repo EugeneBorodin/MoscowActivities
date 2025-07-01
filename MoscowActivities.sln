@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Utils\Utils.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "Web\Web.csproj", "{47209D8B-00B5-43EE-A238-7BC162C5A8BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntryPoints.TelegramBot", "EntryPoints.TelegramBot\EntryPoints.TelegramBot.csproj", "{383FB72A-F2E7-4E36-A306-AC767120993A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{47209D8B-00B5-43EE-A238-7BC162C5A8BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47209D8B-00B5-43EE-A238-7BC162C5A8BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47209D8B-00B5-43EE-A238-7BC162C5A8BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{383FB72A-F2E7-4E36-A306-AC767120993A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{383FB72A-F2E7-4E36-A306-AC767120993A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{383FB72A-F2E7-4E36-A306-AC767120993A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{383FB72A-F2E7-4E36-A306-AC767120993A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

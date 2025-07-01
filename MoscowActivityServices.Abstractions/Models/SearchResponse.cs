@@ -190,8 +190,8 @@ namespace MoscowActivityServices.Abstractions.Models
         [JsonPropertyName("abonement_restriction")]
         public int AbonementRestriction { get; set; }
 
-        [JsonPropertyName("category")]
-        public ServiceCategory Category { get; set; }
+        // [JsonPropertyName("category")]
+        // public ServiceCategory Category { get; set; }
     }
 
     public class DurationDetails
