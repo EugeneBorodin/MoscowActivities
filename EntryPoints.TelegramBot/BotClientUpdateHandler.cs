@@ -1,4 +1,4 @@
-using System.Text.Json;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using MoscowActivityServices.Abstractions;
 using MoscowActivityServices.Abstractions.Models;
@@ -6,7 +6,6 @@ using NodaTime;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace EntryPoints.TelegramBot;
 
@@ -31,9 +30,33 @@ public class BotClientUpdateHandler : IUpdateHandler
         
         _logger.LogInformation($"Update received {update.Message.Text}");
 
-        var answer = await GetInformationAboutSlots();
+        string answer = string.Empty;
+        Slot[] slots = new Slot[] { };
         
-        await botClient.SendMessage(update.Message.Chat.Id, answer, cancellationToken: cancellationToken);
+        try
+        {
+            slots = await GetInformationAboutSlots();
+        }
+        catch (Exception e)
+        {
+            var errMessage = "При получении информации о свободных слотах произошла ошибка";
+            _logger.LogError(e, errMessage);
+            
+            answer = errMessage + ". Обратитесь к администратору бота.";
+            await botClient.SendMessage(update.Message.Chat.Id, answer, cancellationToken: cancellationToken);
+        }
+        
+        if (!slots.Any())
+        {
+            answer = "Извините, слотов не найдено";
+            await botClient.SendMessage(update.Message.Chat.Id, answer, cancellationToken: cancellationToken);
+        }
+
+        foreach (var slot in slots)
+        {
+            var message = GenerateAnswer(slot);
+            await botClient.SendMessage(update.Message.Chat.Id, message, cancellationToken: cancellationToken);
+        }
     }
 
     public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source,
@@ -45,26 +68,30 @@ public class BotClientUpdateHandler : IUpdateHandler
         return Task.FromException(exception);
     }
 
-    private async Task<string> GetInformationAboutSlots()
+    private async Task<Slot[]> GetInformationAboutSlots()
     {
         var today = LocalDate.FromDateTime(DateTime.Now);
         var searchRequest = new SearchRequest
         {
             From = today,
-            Till = LocalDate.Add(today, Period.FromDays(7)),
-            CompanyId = 1367196,
-            Count = 100
+            Till = LocalDate.Add(today, Period.FromDays(1)),
+            CompanyId = 1318073
         };
 
-        var slots = await _activityService.FindSlots(searchRequest);
+        var slotsResponse = await _activityService.FindSlots(searchRequest);
+        return slotsResponse as Slot[] ?? slotsResponse.ToArray();
+    }
 
-        var scheduleData = slots as ScheduleData[] ?? slots.ToArray();
+    private string GenerateAnswer(Slot slot)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(slot.Title);
+        sb.AppendLine(slot.Location);
+        sb.AppendLine(slot.Specialization);
+        sb.AppendLine($"Продолжительность: {slot.Duration.TotalMinutes} мин");
+        sb.AppendLine($"Осталось мест: {slot.Count}");
+        sb.AppendLine();
         
-        if (!scheduleData.Any())
-        {
-            return "Извините, слотов не найдено";
-        }
-        
-        return JsonSerializer.Serialize(scheduleData);
+        return sb.ToString();
     }
 }

@@ -4,5 +4,5 @@ namespace MoscowActivityServices.Abstractions;
 
 public interface IActivityService
 {
-    Task<IEnumerable<ScheduleData>> FindSlots(SearchRequest request);
+    Task<IEnumerable<Slot>> FindSlots(SearchRequest request);
 }

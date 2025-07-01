@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using MoscowActivityServices.Abstractions;
 using MoscowActivityServices.Abstractions.Models;
+using NodaTime;
 
 namespace MoscowActivityServices.Implementation;
 
@@ -15,7 +16,7 @@ public class ActivityService: IActivityService
         _logger = logger;
     }
     
-    public async Task<IEnumerable<ScheduleData>> FindSlots(SearchRequest request)
+    public async Task<IEnumerable<Slot>> FindSlots(SearchRequest request)
     {
         try
         {
@@ -30,9 +31,20 @@ public class ActivityService: IActivityService
         }
     }
 
-    private IEnumerable<ScheduleData> ExtractFreeSlots(SearchResponse searchResponse)
+    private IEnumerable<Slot> ExtractFreeSlots(SearchResponse searchResponse)
     {
-        var slots = searchResponse.Data.Where(data => data.Capacity > data.RecordsCount);
+        var slots = searchResponse.Data
+            .Where(data => data.Capacity > data.RecordsCount)
+            .Select(data => new Slot
+            {
+                Title = data.Service.Title,
+                Location = data.Staff.Name,
+                Specialization = data.Staff.Specialization,
+                Count = data.Capacity - data.RecordsCount,
+                Duration = Duration.FromMinutes(data.DurationDetails.ServicesDuration),
+                StartDateTime = data.Date
+            });
+        
         return slots;
     }
 }
