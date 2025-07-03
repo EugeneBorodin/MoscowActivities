@@ -41,9 +41,16 @@ public class BotClientUpdateHandler : IUpdateHandler
         string answer = string.Empty;
         var slots = new List<Slot>();
         
+        var today = LocalDate.FromDateTime(DateTime.Now);
+        var searchRequest = new SearchRequest
+        {
+            From = today,
+            Till = LocalDate.Add(today, Period.FromDays(5)),
+        };
+        
         try
         {
-            var slotsResponse = await GetInformationAboutSlots();
+            var slotsResponse = await GetInformationAboutSlots(searchRequest);
             slots = slotsResponse.ToList();
         }
         catch (Exception e)
@@ -57,7 +64,8 @@ public class BotClientUpdateHandler : IUpdateHandler
         
         if (!slots.Any())
         {
-            answer = "Извините, слотов не найдено";
+            answer =
+                $"Извините, свободных слотов в даты: {searchRequest.From.ToString()} по {searchRequest.Till.ToString()} - не найдено";
             await botClient.SendMessage(update.ChannelPost.Chat.Id, answer, cancellationToken: cancellationToken);
         }
 
@@ -91,15 +99,8 @@ public class BotClientUpdateHandler : IUpdateHandler
         return Task.FromException(exception);
     }
 
-    private async Task<IEnumerable<Slot>> GetInformationAboutSlots()
+    private async Task<IEnumerable<Slot>> GetInformationAboutSlots(SearchRequest searchRequest)
     {
-        var today = LocalDate.FromDateTime(DateTime.Now);
-        var searchRequest = new SearchRequest
-        {
-            From = today,
-            Till = LocalDate.Add(today, Period.FromDays(5)),
-        };
-
         var slotsResponse = await _activityService.FindSlots(searchRequest);
         return slotsResponse;
     }
