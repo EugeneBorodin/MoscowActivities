@@ -4,6 +4,7 @@ namespace MoscowActivityServices.Abstractions.Models;
 
 public class Slot
 {
+    public int Id { get; set; }
     public string Title { get; set; }
     public string Location { get; set; }
     public string Specialization { get; set; }

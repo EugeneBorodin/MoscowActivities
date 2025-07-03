@@ -10,11 +10,13 @@ public class ActivityClient: IActivityClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ActivityClient> _logger;
+    private readonly string _companyId;
 
-    public ActivityClient(HttpClient httpClient, ILogger<ActivityClient> logger)
+    public ActivityClient(HttpClient httpClient, ILogger<ActivityClient> logger, string companyId)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _companyId = companyId;
     }
 
     public async Task<SearchResponse> Search(SearchRequest request)
@@ -25,7 +27,7 @@ public class ActivityClient: IActivityClient
             string till = request.Till.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             
             var response = await _httpClient.GetAsync(
-                $"api/v1/activity/{request.CompanyId}/search?count={request.Count}&from={from}&till={till}&page={request.Page}");
+                $"api/v1/activity/{_companyId}/search?count={request.Count}&from={from}&till={till}&page={request.Page}");
             response.EnsureSuccessStatusCode();
 
             var activities = await response.Content.ReadFromJsonAsync<SearchResponse>();

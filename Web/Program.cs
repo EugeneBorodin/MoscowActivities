@@ -5,7 +5,9 @@ using Utils.Settings;
 var builder = WebApplication.CreateBuilder(args);
 
 var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
+builder.Services.Configure<ActivityClientSettings>(builder.Configuration.GetSection("Settings:ActivityClient"));
 builder.Services.AddMoscowActivityServices(settings.ActivityClient);
+builder.Services.AddMemoryCache();
 builder.Services.AddTelegramBot(settings.Bot);
     
 var app = builder.Build();
