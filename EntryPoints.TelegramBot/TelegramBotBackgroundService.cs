@@ -25,9 +25,10 @@ public class TelegramBotBackgroundService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            var options = new ReceiverOptions { DropPendingUpdates = true };
             try
             {
-                await _botClient.ReceiveAsync(_updateHandler, cancellationToken: stoppingToken);
+                await _botClient.ReceiveAsync(_updateHandler, options, cancellationToken: stoppingToken);
             }
             catch (Exception ex)
             {
