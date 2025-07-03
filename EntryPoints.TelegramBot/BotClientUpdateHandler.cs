@@ -1,5 +1,3 @@
-using System.Text;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using MoscowActivityServices.Abstractions;
 using MoscowActivityServices.Abstractions.Models;
@@ -7,6 +5,7 @@ using NodaTime;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
+using Utils;
 
 namespace EntryPoints.TelegramBot;
 
@@ -14,13 +13,11 @@ public class BotClientUpdateHandler : IUpdateHandler
 {
     private readonly ILogger<BotClientUpdateHandler> _logger;
     private readonly IActivityService _activityService;
-    private readonly IMemoryCache _cache;
 
-    public BotClientUpdateHandler(ILogger<BotClientUpdateHandler> logger, IActivityService activityService, IMemoryCache cache)
+    public BotClientUpdateHandler(ILogger<BotClientUpdateHandler> logger, IActivityService activityService)
     {
         _logger = logger;
         _activityService = activityService;
-        _cache = cache;
     }
 
     public async Task HandleUpdateAsync(
@@ -37,6 +34,12 @@ public class BotClientUpdateHandler : IUpdateHandler
 
         _logger.LogInformation(
             $"Update received: {update.ChannelPost.Text} in chat with id: {update.ChannelPost.Chat.Id}");
+
+        if (update.ChannelPost.Text != "Покажи все слоты")
+        {
+            await botClient.SendMessage(update.ChannelPost.Chat.Id, "Чтобы узнать все слоты, нужно ввести: \"Покажи все слоты\"", cancellationToken: cancellationToken);
+            return;
+        }
 
         string answer = string.Empty;
         var slots = new List<Slot>();
@@ -71,19 +74,7 @@ public class BotClientUpdateHandler : IUpdateHandler
 
         foreach (var slot in slots)
         {
-            var message = GenerateAnswer(slot);
-            
-            if (_cache.TryGetValue(slot.Id, out var slotEntry))
-            {
-                if (slotEntry != null)
-                {
-                    continue;
-                }
-                else
-                {
-                     _cache.Set(slot.Id, message, TimeSpan.FromDays(5));
-                }
-            }
+            var message = BotExtensions.GenerateAnswer(slot);
             
             await botClient.SendMessage(update.ChannelPost.Chat.Id, message, cancellationToken: cancellationToken);
             await Task.Delay(1000, cancellationToken);
@@ -103,19 +94,5 @@ public class BotClientUpdateHandler : IUpdateHandler
     {
         var slotsResponse = await _activityService.FindSlots(searchRequest);
         return slotsResponse;
-    }
-
-    private string GenerateAnswer(Slot slot)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine(slot.StartDateTime);
-        sb.AppendLine(slot.Title);
-        sb.AppendLine(slot.Location);
-        sb.AppendLine(slot.Specialization);
-        sb.AppendLine($"Продолжительность: {slot.Duration.TotalMinutes} мин");
-        sb.AppendLine($"Осталось мест: {slot.Count}");
-        sb.AppendLine();
-        
-        return sb.ToString();
     }
 }

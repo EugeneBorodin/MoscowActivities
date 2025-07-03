@@ -24,16 +24,28 @@ public class ActivityService: IActivityService
     {
         try
         {
-            var slots = new List<Slot>();
             var clients = _activityClientSettings.Value.Clients;
+
+            var tasks = new List<Task<SearchResponse>>();
 
             foreach (var client in clients)
             {
                 var httpClient = _clientFactory.GetClient(client.Key, client.Value.CompanyId);
-                var response = await httpClient.Search(request);
-                slots.AddRange(ExtractFreeSlots(response));
+                tasks.Add(httpClient.Search(request));
             }
             
+            await Task.WhenAll(tasks);
+            
+            var slots = new List<Slot>();
+
+            foreach (var task in tasks)
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    slots.AddRange(ExtractFreeSlots(task.Result));
+                }
+            }
+
             return slots;
         }
         catch (Exception ex)
@@ -55,7 +67,8 @@ public class ActivityService: IActivityService
                 Specialization = data.Staff.Specialization,
                 Count = data.Capacity - data.RecordsCount,
                 Duration = Duration.FromSeconds(data.DurationDetails.ServicesDuration),
-                StartDateTime = data.Date
+                StartDateTime = data.Date,
+                BookingLink = $"{searchResponse.BaseUrl}company/{data.Staff.CompanyId}/activity/info/{data.Id}"
             });
         
         return slots;

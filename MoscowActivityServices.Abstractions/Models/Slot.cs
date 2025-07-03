@@ -11,4 +11,5 @@ public class Slot
     public int Count { get; set; }
     public string StartDateTime { get; set; }
     public Duration Duration { get; set; }
+    public string BookingLink { get; set; }
 }

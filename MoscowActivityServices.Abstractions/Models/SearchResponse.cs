@@ -6,6 +6,8 @@ namespace MoscowActivityServices.Abstractions.Models
     {
         [JsonPropertyName("data")]
         public List<ScheduleData> Data { get; set; }
+        
+        public string BaseUrl { get; set; }
     }
 
     public class ScheduleData

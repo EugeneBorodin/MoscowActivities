@@ -31,6 +31,8 @@ public class ActivityClient: IActivityClient
             response.EnsureSuccessStatusCode();
 
             var activities = await response.Content.ReadFromJsonAsync<SearchResponse>();
+            activities.BaseUrl = _httpClient.BaseAddress.ToString();
+            
             return activities;
         }
         catch (Exception e)

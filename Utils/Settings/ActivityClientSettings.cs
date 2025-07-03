@@ -3,7 +3,6 @@ namespace Utils.Settings;
 public class ActivityClientSettings
 {
     public string Token { get; set; }
-    
     public Dictionary<string, ActivityClientData> Clients { get; set; } = new();
 }
 
