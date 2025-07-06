@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Settings__ActivityClient__Token=${ACTIVITY_CLIENT_TOKEN}
+      - Settings__Bot__ApiToken=${BOT_TOKEN}
+      - Settings__Bot__ChannelId=${BOT_CHANNEL_ID}
+    ports:
+      - 5000:5000

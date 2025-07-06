@@ -1,7 +1,6 @@
 using EntryPoints.TelegramBot;
 using MoscowActivityServices.Implementation;
 using Utils.Settings;
-using Web;
 using Web.BackgroundServices;
 using Web.Handlers;
 
