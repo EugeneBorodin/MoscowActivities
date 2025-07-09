@@ -1,8 +1,7 @@
 using EntryPoints.TelegramBot;
 using MoscowActivityServices.Implementation;
+using UseCases;
 using Utils.Settings;
-using Web.BackgroundServices;
-using Web.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +14,7 @@ builder.Services.AddMoscowActivityServices(settings.ActivityClient);
 builder.Services.AddMemoryCache();
 builder.Services.AddTelegramBot(settings.Bot);
 
-builder.Services.AddTransient<SlotSearchingHandler>();
-builder.Services.AddHostedService<SlotSearchingBackgroundService>();
+builder.Services.AddUseCases();
     
 var app = builder.Build();
 

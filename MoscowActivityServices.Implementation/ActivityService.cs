@@ -58,7 +58,7 @@ public class ActivityService: IActivityService
     private IEnumerable<Slot> ExtractFreeSlots(SearchResponse searchResponse)
     {
         var slots = searchResponse.Data
-            .Where(data => data.Capacity > data.RecordsCount)
+            .Where(IsSlotAvailable)
             .Select(data => new Slot
             {
                 Id = data.Id,
@@ -72,5 +72,10 @@ public class ActivityService: IActivityService
             });
         
         return slots;
+    }
+
+    private bool IsSlotAvailable(ScheduleData data)
+    {
+        return data.Timestamp > new Instant().ToUnixTimeSeconds() && data.Capacity > data.RecordsCount;
     }
 }

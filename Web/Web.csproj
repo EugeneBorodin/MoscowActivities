@@ -10,6 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\EntryPoints.TelegramBot\EntryPoints.TelegramBot.csproj" />
       <ProjectReference Include="..\MoscowActivityServices.Implementation\MoscowActivityServices.Implementation.csproj" />
+      <ProjectReference Include="..\UseCases\UseCases.csproj" />
       <ProjectReference Include="..\Utils\Utils.csproj" />
     </ItemGroup>
 

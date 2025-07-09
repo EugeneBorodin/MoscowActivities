@@ -15,24 +15,12 @@ namespace MoscowActivityServices.Abstractions.Models
         [JsonPropertyName("id")]
         public int Id { get; set; }
 
-        [JsonPropertyName("service_id")]
-        public int ServiceId { get; set; }
-
-        [JsonPropertyName("company_id")]
-        public int CompanyId { get; set; }
-
-        [JsonPropertyName("staff_id")]
-        public int StaffId { get; set; }
-
         [JsonPropertyName("date")]
         public string Date { get; set; }
 
         [JsonPropertyName("timestamp")]
         public long Timestamp { get; set; }
-
-        [JsonPropertyName("length")]
-        public int Length { get; set; }
-
+        
         [JsonPropertyName("capacity")]
         public int Capacity { get; set; }
         
@@ -57,9 +45,6 @@ namespace MoscowActivityServices.Abstractions.Models
 
     public class Staff
     {
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
-
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -68,9 +53,6 @@ namespace MoscowActivityServices.Abstractions.Models
 
         [JsonPropertyName("specialization")]
         public string Specialization { get; set; }
-
-        [JsonPropertyName("prepaid")]
-        public string Prepaid { get; set; }
     }
 
     public class Service

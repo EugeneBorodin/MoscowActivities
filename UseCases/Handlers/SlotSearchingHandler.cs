@@ -1,4 +1,6 @@
+using MediatR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MoscowActivityServices.Abstractions;
 using MoscowActivityServices.Abstractions.Models;
@@ -7,9 +9,15 @@ using Telegram.Bot;
 using Utils;
 using Utils.Settings;
 
-namespace Web.Handlers;
+namespace UseCases.Handlers;
 
-public class SlotSearchingHandler
+public class SlotSearchingRequest : IRequest
+{
+    public LocalDate From { get; set; }
+    public LocalDate Till { get; set; }
+}
+
+public class SlotSearchingHandler : IRequestHandler<SlotSearchingRequest>
 {
     private readonly IMemoryCache _cache;
     private readonly ILogger<SlotSearchingHandler> _logger;
@@ -31,18 +39,17 @@ public class SlotSearchingHandler
         _botClient = botClient;
     }
 
-    public async Task Handle(CancellationToken cancellationToken)
+    public async Task Handle(SlotSearchingRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         
         string answer = string.Empty;
         var slots = new List<Slot>();
         
-        var today = LocalDate.FromDateTime(DateTime.Now);
         var searchRequest = new SearchRequest
         {
-            From = today,
-            Till = LocalDate.Add(today, Period.FromDays(5)),
+            From = request.From,
+            Till = request.Till,
         };
         
         var channelId = _botSettings.Value.ChannelId;
