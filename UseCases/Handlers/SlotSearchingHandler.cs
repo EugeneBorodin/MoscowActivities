@@ -56,7 +56,7 @@ public class SlotSearchingHandler : IRequestHandler<SlotSearchingRequest>
         
         try
         {
-            var slotsResponse = await GetInformationAboutSlots(searchRequest);
+            var slotsResponse = await _activityService.FindSlots(searchRequest);
             slots = slotsResponse.ToList();
         }
         catch (Exception e)
@@ -84,11 +84,5 @@ public class SlotSearchingHandler : IRequestHandler<SlotSearchingRequest>
             await _botClient.SendMessage(channelId, message, cancellationToken: cancellationToken);
             await Task.Delay(500, cancellationToken);
         }
-    }
-    
-    private async Task<IEnumerable<Slot>> GetInformationAboutSlots(SearchRequest searchRequest)
-    {
-        var slotsResponse = await _activityService.FindSlots(searchRequest);
-        return slotsResponse;
     }
 }

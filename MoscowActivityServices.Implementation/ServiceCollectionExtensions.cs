@@ -21,6 +21,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IActivityClientFactory, ActivityClientFactory>();
         services.AddTransient<IActivityService, ActivityService>();
 
+        services.AddTransient<IBookingConfigService, BookingConfigService>();
+
         return services;
     }
 }
