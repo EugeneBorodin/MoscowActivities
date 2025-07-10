@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using UseCases.Handlers;
 
 namespace EntryPoints.TelegramBot;
@@ -23,12 +24,24 @@ public class BotClientUpdateHandler : IUpdateHandler
         Update update,
         CancellationToken cancellationToken)
     {
+        if (update.Message != null)
+        {
+            await _mediator.Send(new MessageClientUpdateRequest
+            {
+                Message = update.Message,
+            }, cancellationToken);
+            
+            return;
+        }
+        
         if (update.ChannelPost != null)
         {
             await _mediator.Send(new ChannelClientUpdateRequest
             {
                 ChannelPost = update.ChannelPost,
             }, cancellationToken);
+            
+            return;
         }
     }
 

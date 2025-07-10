@@ -28,8 +28,7 @@ public class BookingConfigService : IBookingConfigService
                 return bookingConfig;
             }
             
-            await using var fileStream = new FileStream(BookingConfigFileName, FileMode.OpenOrCreate);
-            bookingConfig = await JsonSerializer.DeserializeAsync<BookingConfig>(fileStream);
+            bookingConfig = await GetBookingConfigFromFile();
             
             _memoryCache.Set(BookingConfigFileName, bookingConfig, TimeSpan.FromDays(1));
         
@@ -55,6 +54,30 @@ public class BookingConfigService : IBookingConfigService
         {
             _logger.LogError(e, "Не удалось обновить конфигурацию для автозаписи");
             throw;
+        }
+    }
+
+    private async Task<BookingConfig> GetBookingConfigFromFile()
+    {
+        BookingConfig cfg;
+        
+        try
+        {
+            await using var fileStream = new FileStream(BookingConfigFileName, FileMode.Open);
+            cfg = await JsonSerializer.DeserializeAsync<BookingConfig>(fileStream);
+            
+            return cfg;
+        }
+        catch (FileNotFoundException e)
+        {
+            _logger.LogWarning(e, "Файла {fileName} для хранения конфига автозаписи не существует. Он будет создан",
+                BookingConfigFileName);
+            
+            cfg = new BookingConfig();
+            var configContent = JsonSerializer.Serialize(cfg);
+            await File.WriteAllTextAsync(BookingConfigFileName, configContent);
+
+            return cfg;
         }
     }
 }
