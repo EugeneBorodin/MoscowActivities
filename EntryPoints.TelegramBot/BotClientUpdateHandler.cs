@@ -1,3 +1,4 @@
+using EntryPoints.TelegramBot.BotCommands;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -11,11 +12,13 @@ namespace EntryPoints.TelegramBot;
 public class BotClientUpdateHandler : IUpdateHandler
 {
     private readonly IMediator _mediator;
+    private readonly IBotCommandFactory _commandFactory;
     private readonly ILogger<BotClientUpdateHandler> _logger;
 
-    public BotClientUpdateHandler(IMediator mediator, ILogger<BotClientUpdateHandler> logger)
+    public BotClientUpdateHandler(IMediator mediator, IBotCommandFactory commandFactory, ILogger<BotClientUpdateHandler> logger)
     {
         _mediator = mediator;
+        _commandFactory = commandFactory;
         _logger = logger;
     }
 
@@ -24,24 +27,19 @@ public class BotClientUpdateHandler : IUpdateHandler
         Update update,
         CancellationToken cancellationToken)
     {
-        if (update.Message != null)
+        if (update.Type == UpdateType.Message)
         {
-            await _mediator.Send(new MessageClientUpdateRequest
-            {
-                Message = update.Message,
-            }, cancellationToken);
-            
-            return;
+            var botCommand = _commandFactory.GetCommand(update.Message.Text);
+            var response = await botCommand.Execute(update.Message);
+
+            await botClient.SendMessage(update.Message.Chat.Id, response, cancellationToken: cancellationToken);
         }
-        
-        if (update.ChannelPost != null)
+        else if (update.Type == UpdateType.ChannelPost)
         {
             await _mediator.Send(new ChannelClientUpdateRequest
             {
                 ChannelPost = update.ChannelPost,
             }, cancellationToken);
-            
-            return;
         }
     }
 

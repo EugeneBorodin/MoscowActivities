@@ -11,11 +11,12 @@ public class UserConfig
     public string Fullname { get; set; }
     public string PhoneNumber { get; set; }
     public string Email { get; set; }
-    public List<SlotTimeToBook> SlotTimeToBookItems { get; set; } = new ();
+    public List<SlotParam> SlotParams { get; set; } = new ();
 }
 
-public class SlotTimeToBook
+public class SlotParam
 {
     public DayOfWeek DayOfWeek { get; set; }
     public TimeOnly Time { get; set; }
+    public int PeopleCount { get; set; }
 }
