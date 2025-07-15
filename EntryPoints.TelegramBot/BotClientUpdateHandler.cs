@@ -29,11 +29,15 @@ public class BotClientUpdateHandler : IUpdateHandler
     {
         if (update.Type == UpdateType.Message)
         {
-            var botCommand = _commandFactory.GetCommand(update.Message.Text);
+            var commandType = BotCommandsHelper.GetCommandType(update.Message.Text);
+        
+            var botCommand = _commandFactory.GetCommand(commandType);
+            
             var response = await botCommand.Execute(update.Message);
 
             await botClient.SendMessage(update.Message.Chat.Id, response, cancellationToken: cancellationToken);
         }
+        
         else if (update.Type == UpdateType.ChannelPost)
         {
             await _mediator.Send(new ChannelClientUpdateRequest

@@ -1,3 +1,4 @@
+using EntryPoints.TelegramBot.BotCommands.Messages;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,16 +14,17 @@ public class BotCommandFactory : IBotCommandFactory
         _serviceProvider = serviceProvider;
     }
     
-    public IBotCommand GetCommand(string message)
+    public IBotCommand GetCommand(BotCommandType botCommandType)
     {
-        var data = message.Trim();
-
-        if (data.StartsWith("/конфигурация"))
+        switch (botCommandType)
         {
-            return new UpdateConfigBotCommand(_serviceProvider.GetRequiredService<IMediator>(),
-                _serviceProvider.GetRequiredService<ILogger<UpdateConfigBotCommand>>());
+            case BotCommandType.UpdateUserConfig:
+                return new UpdateConfigBotCommand(_serviceProvider.GetRequiredService<IMediator>(),
+                    _serviceProvider.GetRequiredService<ILogger<UpdateConfigBotCommand>>());
+            case BotCommandType.GetUserConfig:
+                return new GetConfigBotCommand(_serviceProvider.GetRequiredService<IMediator>(),
+                    _serviceProvider.GetRequiredService<ILogger<GetConfigBotCommand>>());
+            default: throw new ArgumentException("Команда не задана");
         }
-        
-        throw new ArgumentException("Команда не задана");
     }
 }
