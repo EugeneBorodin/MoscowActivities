@@ -12,4 +12,8 @@ public class Slot
     public string StartDateTime { get; set; }
     public Duration Duration { get; set; }
     public string BookingLink { get; set; }
+    public int StaffId { get; set; }
+    public int ServiceId { get; set; }
+    public int BookingFormId { get; set; }
+    public DateTimeOffset DateTime { get; set; }
 }

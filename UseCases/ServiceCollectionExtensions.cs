@@ -10,6 +10,7 @@ public static class ServiceCollectionExtensions
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblies));
         services.AddHostedService<SlotSearchingBackgroundService>();
+        services.AddHostedService<SlotBookingBackgroundService>();
         
         return services;
     }

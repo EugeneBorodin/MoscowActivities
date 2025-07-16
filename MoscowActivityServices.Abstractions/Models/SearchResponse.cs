@@ -6,7 +6,7 @@ namespace MoscowActivityServices.Abstractions.Models
     {
         [JsonPropertyName("data")]
         public List<ScheduleData> Data { get; set; }
-        
+        public int BookingFormId { get; set; }
         public string BaseUrl { get; set; }
     }
 
@@ -45,6 +45,9 @@ namespace MoscowActivityServices.Abstractions.Models
 
     public class Staff
     {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -57,6 +60,9 @@ namespace MoscowActivityServices.Abstractions.Models
 
     public class Service
     {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        
         [JsonPropertyName("title")]
         public string Title { get; set; }
     }

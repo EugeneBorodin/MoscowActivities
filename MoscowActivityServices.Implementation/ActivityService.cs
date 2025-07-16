@@ -30,7 +30,7 @@ public class ActivityService: IActivityService
 
             foreach (var client in clients)
             {
-                var httpClient = _clientFactory.GetClient(client.Key, client.Value.CompanyId);
+                var httpClient = _clientFactory.GetClient(client.Key, client.Value.CompanyId, client.Value.BookingFormId);
                 tasks.Add(httpClient.Search(request));
             }
             
@@ -55,6 +55,24 @@ public class ActivityService: IActivityService
         }
     }
 
+    public async Task Book(BookingRequest request)
+    {
+        try
+        {
+            var clientData =
+                _activityClientSettings.Value.Clients.FirstOrDefault(c => c.Value.BookingFormId == request.BookformId);
+            var httpClient = _clientFactory.GetClient(clientData.Key, clientData.Value.CompanyId,
+                clientData.Value.BookingFormId);
+
+            await httpClient.Book(request);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     private IEnumerable<Slot> ExtractFreeSlots(SearchResponse searchResponse)
     {
         var slots = searchResponse.Data
@@ -68,7 +86,11 @@ public class ActivityService: IActivityService
                 Count = data.Capacity - data.RecordsCount,
                 Duration = Duration.FromSeconds(data.DurationDetails.ServicesDuration),
                 StartDateTime = data.Date,
-                BookingLink = $"{searchResponse.BaseUrl}company/{data.Staff.CompanyId}/activity/info/{data.Id}"
+                StaffId = data.Staff.Id,
+                ServiceId = data.Service.Id,
+                BookingLink = $"{searchResponse.BaseUrl}company/{data.Staff.CompanyId}/activity/info/{data.Id}",
+                BookingFormId = searchResponse.BookingFormId,
+                DateTime = DateTimeOffset.FromUnixTimeSeconds(data.Timestamp)
             });
         
         return slots;
@@ -76,6 +98,8 @@ public class ActivityService: IActivityService
 
     private bool IsSlotAvailable(ScheduleData data)
     {
-        return data.Timestamp > new Instant().ToUnixTimeSeconds() && data.Capacity > data.RecordsCount;
+        return 
+            data.Timestamp > new Instant().ToUnixTimeSeconds() && 
+            data.Capacity > data.RecordsCount;
     }
 }
