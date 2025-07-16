@@ -11,7 +11,5 @@ services:
       - Settings__Bot__ApiToken=${TEST_BOT_TOKEN}
       - Settings__Bot__ChannelId=${TEST_BOT_CHANNEL_ID}
       - Settings__Bot__Admins=${ADMINS}
-    volumes:
-      - ./booking-config.json:./booking-config.json:rw
     ports:
       - 5000:5000
