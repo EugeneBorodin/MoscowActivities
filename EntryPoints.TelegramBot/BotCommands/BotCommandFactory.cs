@@ -24,7 +24,10 @@ public class BotCommandFactory : IBotCommandFactory
             case BotCommandType.GetUserConfig:
                 return new GetConfigBotCommand(_serviceProvider.GetRequiredService<IMediator>(),
                     _serviceProvider.GetRequiredService<ILogger<GetConfigBotCommand>>());
-            default: throw new ArgumentException("Команда не задана");
+            case BotCommandType.GetHelp:
+                return new GetHelpBotCommand(_serviceProvider.GetRequiredService<IMediator>(),
+                    _serviceProvider.GetRequiredService<ILogger<GetHelpBotCommand>>());
+            default: throw new ArgumentException("Команда не задана, воспользуйся справкой: /справка");
         }
     }
 }

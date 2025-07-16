@@ -15,9 +15,9 @@ public class ActivityClientFactory: IActivityClientFactory
         _logger = serviceProvider.GetRequiredService<ILogger<ActivityClient>>();
     }
     
-    public IActivityClient GetClient(string clientName, string companyId, int bookingFormId)
+    public IActivityClient GetClient(string clientName, ActivityClientCompanySettings settings)
     {
         var client = _httpClientFactory.CreateClient(clientName);
-        return new ActivityClient(client, _logger, companyId, bookingFormId);
+        return new ActivityClient(client, _logger, settings);
     }
 }

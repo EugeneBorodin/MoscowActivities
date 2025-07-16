@@ -30,7 +30,13 @@ public class ActivityService: IActivityService
 
             foreach (var client in clients)
             {
-                var httpClient = _clientFactory.GetClient(client.Key, client.Value.CompanyId, client.Value.BookingFormId);
+                var clientCompanySettings = new ActivityClientCompanySettings
+                {
+                    BookFormId = client.Value.BookFormId,
+                    CompanyId = client.Value.CompanyId,
+                };
+                
+                var httpClient = _clientFactory.GetClient(client.Key, clientCompanySettings);
                 tasks.Add(httpClient.Search(request));
             }
             
@@ -59,10 +65,16 @@ public class ActivityService: IActivityService
     {
         try
         {
-            var clientData =
-                _activityClientSettings.Value.Clients.FirstOrDefault(c => c.Value.BookingFormId == request.BookformId);
-            var httpClient = _clientFactory.GetClient(clientData.Key, clientData.Value.CompanyId,
-                clientData.Value.BookingFormId);
+            var clients = _activityClientSettings.Value.Clients;
+            var clientData = clients.FirstOrDefault(c => c.Value.BookFormId == request.BookformId);
+            
+            var clientCompanySettings = new ActivityClientCompanySettings
+            {
+                BookFormId = clientData.Value.BookFormId,
+                CompanyId = clientData.Value.CompanyId,
+            };
+            
+            var httpClient = _clientFactory.GetClient(clientData.Key, clientCompanySettings);
 
             await httpClient.Book(request);
         }

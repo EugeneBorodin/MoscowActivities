@@ -12,14 +12,14 @@ public class ActivityClient: IActivityClient
     private readonly HttpClient _httpClient;
     private readonly ILogger<ActivityClient> _logger;
     private readonly string _companyId;
-    private readonly int _bookingFormId;
+    private readonly int _bookFormId;
 
-    public ActivityClient(HttpClient httpClient, ILogger<ActivityClient> logger, string companyId, int bookingFormId)
+    public ActivityClient(HttpClient httpClient, ILogger<ActivityClient> logger, ActivityClientCompanySettings companySettings)
     {
         _httpClient = httpClient;
         _logger = logger;
-        _companyId = companyId;
-        _bookingFormId = bookingFormId;
+        _companyId = companySettings.CompanyId;
+        _bookFormId = companySettings.BookFormId;
     }
 
     public async Task<SearchResponse> Search(SearchRequest request)
@@ -35,7 +35,7 @@ public class ActivityClient: IActivityClient
 
             var activities = await response.Content.ReadFromJsonAsync<SearchResponse>();
             activities.BaseUrl = _httpClient.BaseAddress.ToString();
-            activities.BookingFormId = _bookingFormId;
+            activities.BookingFormId = _bookFormId;
             
             return activities;
         }
@@ -52,7 +52,7 @@ public class ActivityClient: IActivityClient
         
         try
         {
-            request.BookformId = _bookingFormId;
+            request.BookformId = _bookFormId;
             request.RedirectUrl = _httpClient.BaseAddress + $"api/v1/activity/{_companyId}/success-order/{{recordId}}/{{recordHash}}";
             
             var httpRequest =

@@ -48,7 +48,8 @@ public class UpdateConfigBotCommand : IBotCommand
     {
         var config = new UserConfig
         {
-            Username = message.Chat.Username
+            Username = message.Chat.Username,
+            ChatId = message.Chat.Id,
         };
         
         var text = message.Text;

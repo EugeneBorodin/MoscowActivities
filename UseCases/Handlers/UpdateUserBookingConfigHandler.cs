@@ -29,6 +29,7 @@ public class UpdateUserBookingConfigHandler: IRequestHandler<UpdateUserBookingCo
         if (userConfig != null)
         {
             userConfig.Username = request.UserConfig.Username;
+            userConfig.ChatId = request.UserConfig.ChatId;
             userConfig.Fullname = request.UserConfig.Fullname;
             userConfig.PhoneNumber = request.UserConfig.PhoneNumber;
             userConfig.Email = request.UserConfig.Email;

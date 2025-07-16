@@ -63,9 +63,6 @@ public class SlotSearchingHandler : IRequestHandler<SlotSearchingRequest>
         {
             var errMessage = "При получении информации о свободных слотах произошла ошибка";
             _logger.LogError(e, errMessage);
-            
-            answer = errMessage + ". Обратитесь к администратору бота.";
-            await _botClient.SendMessage(channelId, answer, cancellationToken: cancellationToken);
 
             throw;
         }

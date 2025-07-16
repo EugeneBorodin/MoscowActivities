@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MoscowActivityServices.Abstractions;
 using MoscowActivityServices.Abstractions.Models;
 using NodaTime;
+using Telegram.Bot;
 
 namespace UseCases.Handlers;
 
@@ -19,12 +20,14 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
     private IActivityService _activityService;
     private readonly IMemoryCache _cache;
     private readonly ILogger<SlotBookingHandler> _logger;
+    private readonly ITelegramBotClient _botClient;
 
-    public SlotBookingHandler(IActivityService activityService, IMemoryCache cache, ILogger<SlotBookingHandler> logger)
+    public SlotBookingHandler(IActivityService activityService, IMemoryCache cache, ILogger<SlotBookingHandler> logger, ITelegramBotClient botClient)
     {
         _activityService = activityService;
         _cache = cache;
         _logger = logger;
+        _botClient = botClient;
     }
     
     public async Task Handle(SlotBookingRequest request, CancellationToken cancellationToken)
@@ -43,15 +46,31 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
             
             foreach (var bookingRequest in bookingRequests)
             {
+                var activityId = bookingRequest.Appointments.First().ActivityId;
+                if (_cache.TryGetValue(activityId, out _))
+                {
+                    continue;
+                }
+                
                 tasks.Add(_activityService.Book(bookingRequest));
+                _cache.Set(activityId, bookingRequest);
             }
 
             await Task.WhenAll(tasks);
+
+            if (tasks.Any())
+            {
+                var message = "Сработала автоматическая запись на слоты:\n" +
+                              string.Join('\n', bookingRequests.Select(r => r.Appointments.First().Datetime));
+            
+                await _botClient.SendMessage(request.UserConfig.ChatId, message, cancellationToken: cancellationToken);
+            }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Попытка записаться в найденные слоты закончилась ошибкой");
-            throw;
+            
+            await _botClient.SendMessage(request.UserConfig.ChatId, "Попытка записаться в найденные слоты закончилась ошибкой: " + e.Message, cancellationToken: cancellationToken);
         }
     }
 

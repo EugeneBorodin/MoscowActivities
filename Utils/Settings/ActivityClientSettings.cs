@@ -8,7 +8,7 @@ public class ActivityClientSettings
 
 public class ActivityClientData
 {
-    public int BookingFormId { get; set; }
     public string BaseAddress { get; set; }
+    public int BookFormId { get; set; }
     public string CompanyId { get; set; }
 }
