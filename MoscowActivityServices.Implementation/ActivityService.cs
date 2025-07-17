@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using MoscowActivityServices.Abstractions;
 using MoscowActivityServices.Abstractions.Models;
 using NodaTime;
+using Utils;
 using Utils.Settings;
 
 namespace MoscowActivityServices.Implementation;
@@ -102,7 +103,7 @@ public class ActivityService: IActivityService
                 ServiceId = data.Service.Id,
                 BookingLink = $"{searchResponse.BaseUrl}company/{data.Staff.CompanyId}/activity/info/{data.Id}",
                 BookingFormId = searchResponse.BookingFormId,
-                DateTime = DateTimeOffset.FromUnixTimeSeconds(data.Timestamp)
+                DateTime = DateTimeHelper.ConvertToDateTime(data.Timestamp)
             });
         
         return slots;
@@ -110,8 +111,6 @@ public class ActivityService: IActivityService
 
     private bool IsSlotAvailable(ScheduleData data)
     {
-        return 
-            data.Timestamp > new Instant().ToUnixTimeSeconds() && 
-            data.Capacity > data.RecordsCount;
+        return data.Capacity > data.RecordsCount;
     }
 }

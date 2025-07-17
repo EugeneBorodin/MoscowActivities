@@ -15,5 +15,5 @@ public class Slot
     public int StaffId { get; set; }
     public int ServiceId { get; set; }
     public int BookingFormId { get; set; }
-    public DateTimeOffset DateTime { get; set; }
+    public DateTime DateTime { get; set; }
 }

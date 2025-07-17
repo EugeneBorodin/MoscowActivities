@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
     private readonly IMemoryCache _cache;
     private readonly ILogger<SlotBookingHandler> _logger;
     private readonly ITelegramBotClient _botClient;
+    private const string CACHE_PREFIX = "slot_booking_";
 
     public SlotBookingHandler(IActivityService activityService, IMemoryCache cache, ILogger<SlotBookingHandler> logger, ITelegramBotClient botClient)
     {
@@ -47,13 +49,13 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
             foreach (var bookingRequest in bookingRequests)
             {
                 var activityId = bookingRequest.Appointments.First().ActivityId;
-                if (_cache.TryGetValue(activityId, out _))
+                if (_cache.TryGetValue(CACHE_PREFIX + activityId, out _))
                 {
                     continue;
                 }
                 
                 tasks.Add(_activityService.Book(bookingRequest));
-                _cache.Set(activityId, bookingRequest);
+                _cache.Set(CACHE_PREFIX + activityId, bookingRequest);
             }
 
             await Task.WhenAll(tasks);
@@ -69,8 +71,9 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
         catch (Exception e)
         {
             _logger.LogError(e, "Попытка записаться в найденные слоты закончилась ошибкой");
+            var exceptionText = JsonSerializer.Serialize(e);
             
-            await _botClient.SendMessage(request.UserConfig.ChatId, "Попытка записаться в найденные слоты закончилась ошибкой: " + e.Message, cancellationToken: cancellationToken);
+            await _botClient.SendMessage(request.UserConfig.ChatId, "Попытка записаться в найденные слоты закончилась ошибкой: " + exceptionText, cancellationToken: cancellationToken);
         }
     }
 
@@ -79,7 +82,7 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
         var requests = userConfig.SlotParams
             .SelectMany(slotParam => slots
                 .Where(s => slotParam.DayOfWeek == s.DateTime.DayOfWeek
-                            && slotParam.Time == TimeOnly.FromDateTime(s.DateTime.LocalDateTime)
+                            && slotParam.Time == TimeOnly.FromDateTime(s.DateTime)
                             && slotParam.PeopleCount <= s.Count)
                 // .DistinctBy(s => s.DateTime) // раскомментировать, если запись будет происходить на все корты сразу
                 .Select(s => new BookingRequest
@@ -90,7 +93,7 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
                         {
                             ActivityId = s.Id,
                             ActivityType = 2, // default type for this activity
-                            Datetime = s.DateTime.LocalDateTime,
+                            Datetime = s.DateTime,
                             StaffId = s.StaffId,
                             Services = [s.ServiceId],
                             ClientsCount = slotParam.PeopleCount,
