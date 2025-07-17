@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -57,9 +58,17 @@ public class ActivityClient: IActivityClient
             
             var httpRequest =
                 new HttpRequestMessage(HttpMethod.Post, $"api/v1/activity/{_companyId}/{activityId}/book");
-            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request));
+            
+            var requestContent = JsonSerializer.Serialize(request);
+            httpRequest.Content = new StringContent(requestContent, new MediaTypeHeaderValue("application/json"));
+            
+            _logger.LogDebug("Request:\n" + requestContent);
 
             var response = await _httpClient.SendAsync(httpRequest);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogDebug("Response:\n" + responseBody);
+            
             response.EnsureSuccessStatusCode();
             
             _logger.LogInformation("Запись на слот {activityId} успешно создана", activityId);

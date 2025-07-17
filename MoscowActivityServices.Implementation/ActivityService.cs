@@ -103,7 +103,7 @@ public class ActivityService: IActivityService
                 ServiceId = data.Service.Id,
                 BookingLink = $"{searchResponse.BaseUrl}company/{data.Staff.CompanyId}/activity/info/{data.Id}",
                 BookingFormId = searchResponse.BookingFormId,
-                DateTime = DateTimeHelper.ConvertToDateTime(data.Timestamp)
+                DateTime = DateTimeHelper.ConvertToDateTime(data.Timestamp).AddHours(1) // just because data is not correct in response (diff 1 hour)
             });
         
         return slots;
