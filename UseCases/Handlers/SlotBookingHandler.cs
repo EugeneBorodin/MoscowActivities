@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -70,8 +69,8 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
             var message = $"Сработала автоматическая запись на слот: {task.Key}";  
             if (!task.Value.IsCompletedSuccessfully)
             {
-                var exceptionText = JsonSerializer.Serialize(task.Value.Exception?.InnerException);
-                message = $"Попытка записаться на слот: {task.Key} - закончилась ошибкой: {exceptionText}";
+                _logger.LogError(task.Value.Exception, "Попытка записаться в некоторые найденные слоты закончилась ошибкой");
+                message = $"Попытка записаться на слот: {task.Key} - закончилась ошибкой";
             }
             
             await _botClient.SendMessage(request.UserConfig.ChatId, message, cancellationToken: cancellationToken);
