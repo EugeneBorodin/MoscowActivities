@@ -34,6 +34,8 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
     
     public async Task Handle(SlotBookingRequest request, CancellationToken cancellationToken)
     {
+        var taskDict = new Dictionary<string, Task>();
+        
         try
         {
             var slots = await _activityService.FindSlots(new SearchRequest
@@ -43,37 +45,36 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
             });
             
             var bookingRequests = GenerateBookingRequests(slots, request.UserConfig);
-
-            var tasks = new List<Task>();
             
             foreach (var bookingRequest in bookingRequests)
             {
-                var activityId = bookingRequest.Appointments.First().ActivityId;
-                if (_cache.TryGetValue(CACHE_PREFIX + activityId, out _))
+                var appointment = bookingRequest.Appointments.First();
+                if (_cache.TryGetValue(CACHE_PREFIX + appointment.ActivityId, out _))
                 {
                     continue;
                 }
                 
-                tasks.Add(_activityService.Book(bookingRequest));
-                _cache.Set(CACHE_PREFIX + activityId, bookingRequest);
+                taskDict.Add($"{appointment.ActivityId} - {appointment.Datetime}", _activityService.Book(bookingRequest));
+                _cache.Set(CACHE_PREFIX + appointment.ActivityId, bookingRequest);
             }
-
-            await Task.WhenAll(tasks);
-
-            if (tasks.Any())
-            {
-                var message = "Сработала автоматическая запись на слоты:\n" +
-                              string.Join('\n', bookingRequests.Select(r => r.Appointments.First().Datetime));
             
-                await _botClient.SendMessage(request.UserConfig.ChatId, message, cancellationToken: cancellationToken);
-            }
+            await Task.WhenAll(taskDict.Values);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Попытка записаться в найденные слоты закончилась ошибкой");
-            var exceptionText = JsonSerializer.Serialize(e);
+            _logger.LogError(e, "Попытка записаться в некоторые найденные слоты закончилась ошибкой");
+        }
+
+        foreach (var task in taskDict)
+        {
+            var message = $"Сработала автоматическая запись на слот: {task.Key}";  
+            if (!task.Value.IsCompletedSuccessfully)
+            {
+                var exceptionText = JsonSerializer.Serialize(task.Value.Exception?.InnerException);
+                message = $"Попытка записаться на слот: {task.Key} - закончилась ошибкой: {exceptionText}";
+            }
             
-            await _botClient.SendMessage(request.UserConfig.ChatId, "Попытка записаться в найденные слоты закончилась ошибкой: " + exceptionText, cancellationToken: cancellationToken);
+            await _botClient.SendMessage(request.UserConfig.ChatId, message, cancellationToken: cancellationToken);
         }
     }
 
@@ -84,7 +85,6 @@ public class SlotBookingHandler : IRequestHandler<SlotBookingRequest>
                 .Where(s => slotParam.DayOfWeek == s.DateTime.DayOfWeek
                             && slotParam.Time == TimeOnly.FromDateTime(s.DateTime)
                             && slotParam.PeopleCount <= s.Count)
-                // .DistinctBy(s => s.DateTime) // раскомментировать, если запись будет происходить на все корты сразу
                 .Select(s => new BookingRequest
                 {
                     Appointments = new()

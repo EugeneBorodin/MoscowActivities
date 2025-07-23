@@ -24,6 +24,7 @@ public class SlotSearchingHandler : IRequestHandler<SlotSearchingRequest>
     private readonly IActivityService _activityService;
     private readonly IOptions<BotSettings> _botSettings;
     private readonly ITelegramBotClient _botClient;
+    private const string CACHE_PREFIX = "slot_searhing_";
 
     public SlotSearchingHandler(
         IMemoryCache cache,
@@ -71,12 +72,12 @@ public class SlotSearchingHandler : IRequestHandler<SlotSearchingRequest>
         {
             var message = BotExtensions.GenerateAnswer(slot);
             
-            if (_cache.TryGetValue(slot.Id, out _))
+            if (_cache.TryGetValue(CACHE_PREFIX + slot.Id, out _))
             {
                 continue;
             }
             
-            _cache.Set(slot.Id, message, TimeSpan.FromDays(5));
+            _cache.Set(CACHE_PREFIX + slot.Id, message, TimeSpan.FromDays(5));
             
             await _botClient.SendMessage(channelId, message, cancellationToken: cancellationToken);
             await Task.Delay(500, cancellationToken);
